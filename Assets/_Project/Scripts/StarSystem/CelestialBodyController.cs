@@ -94,7 +94,8 @@ public class CelestialBodyController : MonoBehaviour
         }
 
         Vector2 parentPos = _system.GetParentPosition(_data.parentId);
-        Vector2 position = OrbitCalculator.CalculateOrbitPosition(parentPos, _data.orbitDistance, _currentAngle);
+        float adjustedDistance = _data.orbitDistance * _system.OrbitDistanceMultiplier;
+        Vector2 position = OrbitCalculator.CalculateOrbitPosition(parentPos, adjustedDistance, _currentAngle);
         transform.position = new Vector3(position.x, position.y, 0);
     }
 }

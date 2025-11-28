@@ -12,9 +12,11 @@ public class StarSystemRenderer : MonoBehaviour
 
     [Header("Settings")]
     [SerializeField] private float scaleMultiplier = 15f;
+    [SerializeField] private float orbitDistanceMultiplier = 0.5f;
     [SerializeField] private float orbitSpeedMultiplier = 1f;
 
     public float ScaleMultiplier => scaleMultiplier;
+    public float OrbitDistanceMultiplier => orbitDistanceMultiplier;
 
     private StarSystemJson _currentSystem;
     private Dictionary<string, CelestialBodyController> _bodies = new();
