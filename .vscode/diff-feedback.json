@@ -1,0 +1,39 @@
+{
+  "version": "1.0.0",
+  "feedbacks": [
+    {
+      "id": "96040698-09f6-4fb7-bdfc-750e5d2f81fd",
+      "fileUri": "Assets/_Project/Scripts/Player/PlayerShipController.cs",
+      "range": {
+        "start": {
+          "line": 28,
+          "character": 0
+        },
+        "end": {
+          "line": 29,
+          "character": 0
+        }
+      },
+      "comment": "test",
+      "codeSnippet": "    public Vector2 Position => transform.position;\n",
+      "createdAt": "2025-11-28T03:15:58.696Z"
+    },
+    {
+      "id": "e0a73490-dc2d-4fd5-ab99-ebb8550715ce",
+      "fileUri": "Assets/_Project/Scripts/Player/PlayerShipController.cs",
+      "range": {
+        "start": {
+          "line": 92,
+          "character": 0
+        },
+        "end": {
+          "line": 93,
+          "character": 0
+        }
+      },
+      "comment": "test",
+      "codeSnippet": "            Vector2 forwardDirection = transform.right;\n",
+      "createdAt": "2025-11-28T03:16:27.560Z"
+    }
+  ]
+}

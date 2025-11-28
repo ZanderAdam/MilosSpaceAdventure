@@ -1,2 +1,5 @@
 ﻿<Solution>
+  <Project Path="MilosAdventure.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="MilosAdventure.EditModeTests.csproj" />
 </Solution>
