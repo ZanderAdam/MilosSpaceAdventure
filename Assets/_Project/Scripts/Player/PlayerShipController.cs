@@ -24,9 +24,36 @@ public class PlayerShipController : MonoBehaviour
 
     private Vector2 _velocity;
     private bool _isThrusting;
+    private Rigidbody2D _rigidbody;
 
     public float CurrentSpeed => _velocity.magnitude;
+    public Vector2 Velocity => _velocity;
     public Vector2 Position => transform.position;
+
+    private void Awake()
+    {
+        _rigidbody = GetComponent<Rigidbody2D>();
+        if (_rigidbody != null)
+        {
+            _rigidbody.bodyType = RigidbodyType2D.Kinematic;
+            _rigidbody.gravityScale = 0f;
+        }
+    }
+
+    public void ApplyExternalForce(Vector2 force)
+    {
+        _velocity += force;
+
+        if (_velocity.magnitude > maxSpeed)
+        {
+            _velocity = _velocity.normalized * maxSpeed;
+        }
+    }
+
+    public void ApplyOrbitalOffset(Vector2 offset)
+    {
+        transform.position += (Vector3)offset;
+    }
 
     private void Update()
     {

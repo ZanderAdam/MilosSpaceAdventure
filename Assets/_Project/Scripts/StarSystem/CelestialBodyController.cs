@@ -18,6 +18,33 @@ public class CelestialBodyController : MonoBehaviour
     public string BodyName => _data?.name;
     public bool IsStar => _data?.IsStar ?? false;
 
+    public float VisualRadius
+    {
+        get
+        {
+            if (spriteRenderer == null) return 0f;
+
+            return Mathf.Max(spriteRenderer.bounds.size.x, spriteRenderer.bounds.size.y) * 0.5f;
+        }
+    }
+
+    public Vector2 GetOrbitalVelocity()
+    {
+        if (_data == null || _data.IsStar)
+            return Vector2.zero;
+
+        float angleRad = _currentAngle * Mathf.Deg2Rad;
+        float tangentAngle = angleRad + Mathf.PI * 0.5f;
+
+        float adjustedDistance = _data.orbitDistance * _system.OrbitDistanceMultiplier;
+        float linearSpeed = _data.orbitSpeed * Mathf.Deg2Rad * adjustedDistance;
+
+        return new Vector2(
+            Mathf.Cos(tangentAngle),
+            Mathf.Sin(tangentAngle)
+        ) * linearSpeed;
+    }
+
     /// <summary>
     /// Initialize this celestial body from JSON data.
     /// </summary>
@@ -47,7 +74,24 @@ public class CelestialBodyController : MonoBehaviour
 
         transform.localScale = Vector3.one * data.scale * system.ScaleMultiplier;
 
+        if (!data.IsStar)
+        {
+            SetupGravityLockTrigger();
+        }
+
         UpdatePosition();
+    }
+
+    private void SetupGravityLockTrigger()
+    {
+        var collider = gameObject.GetComponent<CircleCollider2D>();
+        if (collider == null)
+        {
+            collider = gameObject.AddComponent<CircleCollider2D>();
+        }
+
+        collider.isTrigger = true;
+        collider.radius = VisualRadius * 2f / transform.localScale.x;
     }
 
     private Sprite CreateCircleSprite(int size)
