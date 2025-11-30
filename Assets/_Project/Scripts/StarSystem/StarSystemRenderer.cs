@@ -77,6 +77,13 @@ public class StarSystemRenderer : MonoBehaviour
         return body;
     }
 
+    public CelestialBodyController[] GetAllBodies()
+    {
+        var result = new CelestialBodyController[_bodies.Count];
+        _bodies.Values.CopyTo(result, 0);
+        return result;
+    }
+
     public Vector3 GetParentPosition(string parentId)
     {
         if (string.IsNullOrEmpty(parentId)) return Vector3.zero;
