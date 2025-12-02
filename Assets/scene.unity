@@ -515,7 +515,7 @@ MonoBehaviour:
   thrustForce: 2
   maxSpeed: 10
   rotationSpeed: 180
-  drag: 0.5
+  drag: 2
   boundarySize: 5000
   thrusterTrail: {fileID: 1059861067}
   thrusterParticles: {fileID: 0}
@@ -603,8 +603,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c1db5308e9704621bf76254a5d4bf05, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lockTransitionDuration: 0.8
-  unlockTransitionDuration: 0.5
+  lockTransitionDuration: 2
+  unlockTransitionDuration: 3
+  unlockGracePeriod: 0.3
   lockIndicatorPrefab: {fileID: 1460847540}
 --- !u!50 &1565073142
 Rigidbody2D:
@@ -764,8 +765,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1565073140}
-  smoothTime: 0.3
-  offset: {x: 0, y: 0, z: -100}
+  smoothTime: 0
+  offset: {x: 0, y: 0, z: -10}
 --- !u!20 &1773161277
 Camera:
   m_ObjectHideFlags: 0

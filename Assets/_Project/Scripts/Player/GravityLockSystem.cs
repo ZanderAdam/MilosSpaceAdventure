@@ -5,24 +5,36 @@ namespace MilosAdventure.Player
 {
     public class GravityLockSystem : MonoBehaviour
     {
-        [Header("Transition Settings")]
-        [SerializeField] private float lockTransitionDuration = 0.8f;
-        [SerializeField] private float unlockTransitionDuration = 0.5f;
+        [Header("Lock Settings")]
+        [SerializeField]
+        [Range(0.0f, 1.0f)]
+        [Tooltip("Grace period before unlocking when planet leaves range (prevents edge bouncing)")]
+        private float unlockGracePeriod = 0.3f;
+
+        [SerializeField]
+        [Range(0.1f, 2.0f)]
+        [Tooltip("Maximum relative speed to planet for full lock (use brake/drag to slow down)")]
+        private float lockActivationSpeed = 0.5f;
+
+        [SerializeField]
+        [Range(0.1f, 1.0f)]
+        [Tooltip("Duration for visual indicator fade in/out")]
+        private float indicatorFadeDuration = 0.3f;
 
         [Header("Visual Feedback")]
         [SerializeField] private GameObject lockIndicatorPrefab;
 
         private PlayerShipController _ship;
         private CelestialBodyController _lockedPlanet;
-        private CelestialBodyController _previousLockedPlanet;
         private GameObject _lockIndicator;
         private List<CelestialBodyController> _planetsInRange = new List<CelestialBodyController>();
-        private float _lockTransitionTime = 0f;
-        private float _unlockTransitionTime = 0f;
-        private bool _isUnlocking = false;
+        private float _indicatorFadeTime = 0f;
+        private bool _isFadingOut = false;
+        private float _timeSinceLeftRange = 0f;
 
         public bool IsLocked => _lockedPlanet != null;
         public CelestialBodyController LockedPlanet => _lockedPlanet;
+        public float LockActivationSpeed => lockActivationSpeed;
 
         private void Awake()
         {
@@ -40,11 +52,6 @@ namespace MilosAdventure.Player
             if (_planetsInRange.Count > 0)
             {
                 UpdateLockTarget();
-
-                if (_lockedPlanet != null)
-                {
-                    ApplyOrbitalMovement();
-                }
             }
         }
 
@@ -90,23 +97,41 @@ namespace MilosAdventure.Player
                 }
             }
 
-            if (nearest != _lockedPlanet)
+            // Only change lock target if it's actually a different planet
+            // Use ReferenceEquals to ensure we're comparing the same object instance
+            if (!ReferenceEquals(nearest, _lockedPlanet))
             {
                 if (nearest != null)
                 {
+                    // Found a new planet to lock to - reset grace timer and lock immediately
+                    _timeSinceLeftRange = 0f;
                     LockToPlanet(nearest);
                 }
-                else
+                else if (_lockedPlanet != null)
                 {
-                    ReleaseLock();
+                    // Planet left range - start grace period timer
+                    _timeSinceLeftRange += Time.fixedDeltaTime;
+
+                    // Only unlock after grace period expires
+                    if (_timeSinceLeftRange >= unlockGracePeriod)
+                    {
+                        ReleaseLock();
+                        _timeSinceLeftRange = 0f;
+                    }
                 }
+            }
+            else
+            {
+                // Still locked to same planet - reset grace timer
+                _timeSinceLeftRange = 0f;
             }
         }
 
         private void LockToPlanet(CelestialBodyController planet)
         {
             _lockedPlanet = planet;
-            _lockTransitionTime = 0f;
+            _indicatorFadeTime = 0f;
+            _isFadingOut = false;
             ShowLockIndicator();
         }
 
@@ -114,69 +139,12 @@ namespace MilosAdventure.Player
         {
             if (_lockedPlanet != null)
             {
-                _previousLockedPlanet = _lockedPlanet;
                 _lockedPlanet = null;
-                _isUnlocking = true;
-                _unlockTransitionTime = 0f;
+                _indicatorFadeTime = 0f;
+                _isFadingOut = true;
             }
         }
 
-        private void ApplyOrbitalMovement()
-        {
-            if (_ship == null)
-                return;
-
-            float influence = 0f;
-            CelestialBodyController targetPlanet = null;
-
-            if (_isUnlocking)
-            {
-                // Unlock transition: fade from 100% to 0%
-                _unlockTransitionTime += Time.fixedDeltaTime;
-                float unlockProgress = Mathf.Clamp01(_unlockTransitionTime / unlockTransitionDuration);
-
-                // Ease-out cubic for smooth release
-                float easedProgress = 1f - Mathf.Pow(1f - unlockProgress, 3f);
-                influence = 1f - easedProgress;
-
-                targetPlanet = _previousLockedPlanet;
-
-                if (unlockProgress >= 1f)
-                {
-                    _isUnlocking = false;
-                    _previousLockedPlanet = null;
-                    HideLockIndicator();
-                    return;
-                }
-            }
-            else if (_lockedPlanet != null)
-            {
-                // Lock transition: fade from 0% to 100%
-                if (_lockTransitionTime < lockTransitionDuration)
-                {
-                    _lockTransitionTime += Time.fixedDeltaTime;
-                }
-
-                float lockProgress = Mathf.Clamp01(_lockTransitionTime / lockTransitionDuration);
-
-                // Ease-out cubic for gentle catch feeling
-                influence = 1f - Mathf.Pow(1f - lockProgress, 3f);
-
-                targetPlanet = _lockedPlanet;
-            }
-            else
-            {
-                return;
-            }
-
-            if (targetPlanet != null)
-            {
-                Vector2 orbitalVelocity = targetPlanet.GetOrbitalVelocity();
-                Vector2 orbitalMovement = orbitalVelocity * Time.fixedDeltaTime * influence;
-
-                _ship.ApplyOrbitalOffset(orbitalMovement);
-            }
-        }
 
         private void ShowLockIndicator()
         {
@@ -201,38 +169,40 @@ namespace MilosAdventure.Player
 
         private void Update()
         {
-            if (_lockIndicator != null && _lockIndicator.activeSelf)
+            // Update fade time
+            if (_indicatorFadeTime < indicatorFadeDuration)
             {
-                CelestialBodyController targetPlanet = _lockedPlanet ?? _previousLockedPlanet;
+                _indicatorFadeTime += Time.deltaTime;
+            }
 
-                if (targetPlanet != null)
+            // Handle fade-out completion
+            if (_isFadingOut && _indicatorFadeTime >= indicatorFadeDuration)
+            {
+                HideLockIndicator();
+                _isFadingOut = false;
+            }
+        }
+
+        private void LateUpdate()
+        {
+            // Update indicator position/visuals AFTER all physics is done (prevents jitter)
+            if (_lockIndicator != null && _lockIndicator.activeSelf && _lockedPlanet != null)
+            {
+                _lockIndicator.transform.position = _lockedPlanet.transform.position;
+
+                float scale = _lockedPlanet.VisualRadius * 2.5f;
+                _lockIndicator.transform.localScale = Vector3.one * scale;
+
+                // Fade indicator alpha
+                var spriteRenderer = _lockIndicator.GetComponent<SpriteRenderer>();
+                if (spriteRenderer != null)
                 {
-                    _lockIndicator.transform.position = targetPlanet.transform.position;
+                    float progress = Mathf.Clamp01(_indicatorFadeTime / indicatorFadeDuration);
+                    float alpha = _isFadingOut ? (1f - progress) * 0.8f : progress * 0.8f;
 
-                    float scale = targetPlanet.VisualRadius * 2.5f;
-                    _lockIndicator.transform.localScale = Vector3.one * scale;
-
-                    // Fade indicator alpha with transition progress
-                    var spriteRenderer = _lockIndicator.GetComponent<SpriteRenderer>();
-                    if (spriteRenderer != null)
-                    {
-                        float alpha = 0f;
-
-                        if (_isUnlocking)
-                        {
-                            float unlockProgress = Mathf.Clamp01(_unlockTransitionTime / unlockTransitionDuration);
-                            alpha = (1f - unlockProgress) * 0.8f;
-                        }
-                        else if (_lockedPlanet != null)
-                        {
-                            float lockProgress = Mathf.Clamp01(_lockTransitionTime / lockTransitionDuration);
-                            alpha = lockProgress * 0.8f;
-                        }
-
-                        Color color = spriteRenderer.color;
-                        color.a = alpha;
-                        spriteRenderer.color = color;
-                    }
+                    Color color = spriteRenderer.color;
+                    color.a = alpha;
+                    spriteRenderer.color = color;
                 }
             }
         }

@@ -6,6 +6,7 @@ using MilosAdventure.Logic;
 /// Controls a single celestial body (star, planet, or moon).
 /// Handles sprite rendering, orbital motion, and initialization from JSON.
 /// </summary>
+[DefaultExecutionOrder(-100)]
 public class CelestialBodyController : MonoBehaviour
 {
     [SerializeField] private SpriteRenderer spriteRenderer;
@@ -121,11 +122,11 @@ public class CelestialBodyController : MonoBehaviour
         return Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (_data == null || _data.IsStar) return;
 
-        _currentAngle = OrbitCalculator.UpdateOrbitAngle(_currentAngle, _data.orbitSpeed, Time.deltaTime);
+        _currentAngle = OrbitCalculator.UpdateOrbitAngle(_currentAngle, _data.orbitSpeed, Time.fixedDeltaTime);
         UpdatePosition();
     }
 

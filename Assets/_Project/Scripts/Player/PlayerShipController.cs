@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -24,11 +25,17 @@ public class PlayerShipController : MonoBehaviour
 
     private Vector2 _velocity;
     private bool _isThrusting;
+    private bool _isBraking;
     private Rigidbody2D _rigidbody;
+    private MilosAdventure.Player.GravityLockSystem _gravityLockSystem;
+    private float _lockTransitionTime = 0f;
+
+    private const float LOCK_TRANSITION_DURATION = 0.8f;
 
     public float CurrentSpeed => _velocity.magnitude;
     public Vector2 Velocity => _velocity;
     public Vector2 Position => transform.position;
+    public float MaxSpeed => maxSpeed;
 
     private void Awake()
     {
@@ -38,6 +45,8 @@ public class PlayerShipController : MonoBehaviour
             _rigidbody.bodyType = RigidbodyType2D.Kinematic;
             _rigidbody.gravityScale = 0f;
         }
+
+        _gravityLockSystem = GetComponent<MilosAdventure.Player.GravityLockSystem>();
     }
 
     public void ApplyExternalForce(Vector2 force)
@@ -48,6 +57,21 @@ public class PlayerShipController : MonoBehaviour
         {
             _velocity = _velocity.normalized * maxSpeed;
         }
+    }
+
+    public void SetVelocity(Vector2 velocity)
+    {
+        _velocity = velocity;
+
+        if (_velocity.magnitude > maxSpeed)
+        {
+            _velocity = _velocity.normalized * maxSpeed;
+        }
+    }
+
+    public void SetVelocityUnclamped(Vector2 velocity)
+    {
+        _velocity = velocity;
     }
 
     public void ApplyOrbitalOffset(Vector2 offset)
@@ -63,8 +87,41 @@ public class PlayerShipController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        ApplyThrust();
-        ApplyDrag();
+        // Speed-based lock logic
+        if (_gravityLockSystem != null && _gravityLockSystem.IsLocked && !_isThrusting)
+        {
+            // In lock range and not thrusting
+            Vector2 planetVelocity = _gravityLockSystem.LockedPlanet.GetOrbitalVelocity();
+            Vector2 relativeVelocity = _velocity - planetVelocity;
+            float relativeSpeed = Math.Abs(relativeVelocity.magnitude);
+
+            // Check if close enough to planet's velocity to lock
+            if (relativeSpeed < _gravityLockSystem.LockActivationSpeed)
+            {
+                // Fully locked - ease into planet velocity over 0.8s (ease-out cubic)
+                _lockTransitionTime += Time.fixedDeltaTime;
+                float progress = Mathf.Clamp01(_lockTransitionTime / LOCK_TRANSITION_DURATION);
+                float easedProgress = 1f - Mathf.Pow(1f - progress, 3f);
+
+                _velocity = Vector2.Lerp(_velocity, planetVelocity, easedProgress);
+            }
+            else
+            {
+                // Not locked yet - reset transition and apply brake/drag to slow down
+                _lockTransitionTime = 0f;
+                ApplyBrake();
+                ApplyDrag();
+            }
+        }
+        else
+        {
+            // Normal movement: player has full control, reset lock transition
+            _lockTransitionTime = 0f;
+            ApplyThrust();
+            ApplyBrake();
+            ApplyDrag();
+        }
+
         ApplyMovement();
         ClampToBoundary();
     }
@@ -104,12 +161,7 @@ public class PlayerShipController : MonoBehaviour
         // Rotate the ship
         transform.Rotate(0, 0, rotationInput * rotationSpeed * Time.deltaTime);
         _isThrusting = thrustInput;
-
-        // Braking
-        if (brakeInput && _velocity.magnitude > 0.1f)
-        {
-            _velocity *= 0.95f;
-        }
+        _isBraking = brakeInput;
     }
 
     private void ApplyThrust()
@@ -123,6 +175,15 @@ public class PlayerShipController : MonoBehaviour
             // Clamp to max speed
             if (_velocity.magnitude > maxSpeed)
                 _velocity = _velocity.normalized * maxSpeed;
+        }
+    }
+
+    private void ApplyBrake()
+    {
+        if (_isBraking && _velocity.magnitude > 0.1f)
+        {
+            // Apply strong deceleration (gravity lock floor will prevent going below planet speed)
+            _velocity *= Mathf.Max(0f, 1f - 3f * Time.fixedDeltaTime);
         }
     }
 
