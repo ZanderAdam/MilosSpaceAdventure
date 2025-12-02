@@ -189,7 +189,7 @@ Transform:
   m_GameObject: {fileID: 1059861065}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.7, y: 0, z: 0}
+  m_LocalPosition: {x: -0.246, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -244,13 +244,13 @@ TrailRenderer:
   m_PreviewTimeScale: 1
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 3
+    widthMultiplier: 1
     widthCurve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 1
+        value: 0.27027023
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -258,17 +258,17 @@ TrailRenderer:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0.60077256
-        value: 0.41581732
-        inSlope: -0.7043745
-        outSlope: -0.7043745
+        time: 0.5274933
+        value: 0.07527554
+        inSlope: -0.36628103
+        outSlope: -0.36628103
         tangentMode: 0
         weightedMode: 0
         inWeight: 0.19616957
-        outWeight: 0.33333334
+        outWeight: 0.31003767
       - serializedVersion: 3
         time: 1
-        value: 0.033333335
+        value: 0
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -564,7 +564,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -5081377184268197374, guid: bbc4ad75e66cb4375a224cab2ef62af3, type: 3}
+  m_Sprite: {fileID: -608604307646626993, guid: 87d01a2558255439e97bebf72b8b5a58, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -585,7 +585,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1059861066}
@@ -603,9 +603,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c1db5308e9704621bf76254a5d4bf05, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lockTransitionDuration: 2
-  unlockTransitionDuration: 3
   unlockGracePeriod: 0.3
+  lockActivationSpeed: 1
+  indicatorFadeDuration: 0.3
   lockIndicatorPrefab: {fileID: 1460847540}
 --- !u!50 &1565073142
 Rigidbody2D:
