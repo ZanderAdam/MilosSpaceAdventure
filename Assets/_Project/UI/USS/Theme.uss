@@ -1,0 +1,40 @@
+/* UI Toolkit Theme - MSA Project
+   Global CSS variables for colors, spacing, timing, and easing
+   Matches colors from Minimap.cs (lines 42-45) and CLAUDE.md standards
+*/
+
+:root {
+    /* Colors - Match existing minimap palette */
+    --color-star: rgb(255, 255, 0);           /* Yellow */
+    --color-planet: rgb(0, 200, 255);         /* Cyan */
+    --color-player: rgb(0, 255, 0);           /* Green */
+    --color-selection: rgba(255, 255, 0, 0.5); /* Yellow 50% alpha */
+    --color-background: rgba(0, 0, 0, 0.7);   /* Black 70% alpha */
+
+    /* Spacing - Consistent padding/margins */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+
+    /* Timing - Match CLAUDE.md standards */
+    --duration-instant: 0.1s;     /* Instant feedback */
+    --duration-action: 0.5s;      /* Satisfying actions */
+    --duration-transition: 0.8s;  /* Gravity lock, fade-ins */
+
+    /* Easing - Ease-out cubic (will use C# for precise control) */
+    /* USS doesn't support cubic-bezier(0.215, 0.61, 0.355, 1) exactly */
+    /* Use C# animations with Mathf.Pow(1f - progress, 3f) instead */
+    --ease-out-cubic: ease-out;   /* Fallback for simple USS transitions */
+
+    /* UI Sizes */
+    --minimap-size-desktop: 150px;
+    --minimap-size-mobile: 120px;
+    --touch-target-min: 44px;  /* Apple HIG minimum */
+
+    /* Border */
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+}

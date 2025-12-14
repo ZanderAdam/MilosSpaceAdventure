@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_Project/UI/USS/Theme.uss?fileID=7433441132597879392&amp;guid=470b000c4bba04e579fccb1e21d16c97&amp;type=3#Theme" />
+    <Style src="project://database/Assets/_Project/UI/USS/Minimap.uss?fileID=7433441132597879392&amp;guid=0e4c8f9a1c4d8e4f9a1c4d8e4f9a1c4d&amp;type=3#Minimap" />
+    <ui:VisualElement name="minimap-container" class="minimap minimap--top-right">
+        <ui:VisualElement name="minimap-background" class="minimap__background" />
+        <ui:VisualElement name="planets-container" class="minimap__planets" />
+        <ui:VisualElement name="player-icon" class="minimap__player" />
+    </ui:VisualElement>
+</ui:UXML>
