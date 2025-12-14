@@ -5,14 +5,6 @@ using MilosAdventure.UI.Utils;
 using MilosAdventure.UI.CustomElements;
 using MilosAdventure.Data;
 
-public enum MinimapPosition
-{
-    TopRight,
-    TopLeft,
-    BottomRight,
-    BottomLeft
-}
-
 /// <summary>
 /// UI Toolkit-based minimap controller.
 /// Displays player and celestial body positions on a compact corner minimap.
