@@ -1,0 +1,19 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_Project/UI/USS/Theme.uss" />
+    <Style src="project://database/Assets/_Project/UI/USS/Animations.uss" />
+    <Style src="project://database/Assets/_Project/UI/USS/InteractiveMap.uss" />
+    <ui:VisualElement name="fullscreen-overlay" class="map-overlay" style="display: none;">
+        <ui:Button name="dimmed-background" class="dimmed-background" />
+        <ui:VisualElement name="map-panel" class="map-panel">
+            <ui:VisualElement name="planets-container" class="planets-container" />
+            <ui:VisualElement name="player-icon" class="player-icon" />
+            <ui:VisualElement name="selection-highlight" class="selection-highlight" style="display: none;" />
+            <ui:Button name="close-button" class="close-button" text="✕" />
+            <ui:VisualElement name="info-panel" class="info-panel" style="display: none;">
+                <ui:Label name="planet-name" class="info-panel__name" text="Planet Name" />
+                <ui:Label name="planet-type" class="info-panel__type" text="Type: Planet" />
+                <ui:Label name="planet-description" class="info-panel__description" text="Description goes here" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
