@@ -5,6 +5,14 @@ using MilosAdventure.UI.Utils;
 using MilosAdventure.UI.CustomElements;
 using MilosAdventure.Data;
 
+public enum MinimapPosition
+{
+    TopRight,
+    TopLeft,
+    BottomRight,
+    BottomLeft
+}
+
 /// <summary>
 /// UI Toolkit-based minimap controller.
 /// Displays player and celestial body positions on a compact corner minimap.
@@ -19,6 +27,15 @@ public class MinimapController : MonoBehaviour
 
     [Header("Minimap Settings")]
     [SerializeField]
+    [Tooltip("Sprite to display for the player ship on minimap")]
+    private Sprite playerIconSprite;
+
+    [SerializeField]
+    [Range(0.05f, 0.5f)]
+    [Tooltip("Scale of player icon relative to sprite size (0.1 = 10% of original)")]
+    private float playerIconScale = 0.1f;
+
+    [SerializeField]
     [Range(200f, 1000f)]
     [Tooltip("Total world size to display")]
     private float worldSize = 800f;
@@ -28,12 +45,12 @@ public class MinimapController : MonoBehaviour
     private MinimapPosition position = MinimapPosition.TopRight;
 
     [SerializeField]
-    [Range(100f, 200f)]
+    [Range(10f, 200f)]
     [Tooltip("Minimap size on desktop in pixels")]
     private float desktopSize = 150f;
 
     [SerializeField]
-    [Range(80f, 150f)]
+    [Range(10f, 150f)]
     [Tooltip("Minimap size on mobile in pixels")]
     private float mobileSize = 120f;
 
@@ -72,14 +89,30 @@ public class MinimapController : MonoBehaviour
         }
 
         _root = uiDocument.rootVisualElement;
+        Debug.Log($"[MinimapController] Root element: {_root}, child count: {_root?.childCount}");
+
         _minimapContainer = _root.Q("minimap-container");
         _planetsContainer = _root.Q("planets-container");
         _playerIcon = _root.Q("player-icon");
+
+        Debug.Log($"[MinimapController] Container: {_minimapContainer}, Planets: {_planetsContainer}, Player: {_playerIcon}");
 
         if (_minimapContainer == null)
         {
             Debug.LogError("[MinimapController] minimap-container not found in UXML");
             return;
+        }
+
+        Debug.Log($"[MinimapController] Minimap container style - width: {_minimapContainer.style.width}, height: {_minimapContainer.style.height}, display: {_minimapContainer.style.display}");
+
+        if (_playerIcon != null && playerIconSprite != null)
+        {
+            float width = playerIconSprite.rect.width * playerIconScale;
+            float height = playerIconSprite.rect.height * playerIconScale;
+
+            _playerIcon.style.width = width;
+            _playerIcon.style.height = height;
+            _playerIcon.style.backgroundImage = new StyleBackground(playerIconSprite);
         }
 
         _worldSizeVector = new Vector2(worldSize, worldSize);
@@ -213,6 +246,12 @@ public class MinimapController : MonoBehaviour
 
     private void OnSystemLoaded(StarSystemJson systemJson)
     {
+        StartCoroutine(CreatePlanetIconsNextFrame());
+    }
+
+    private System.Collections.IEnumerator CreatePlanetIconsNextFrame()
+    {
+        yield return null;
         CreatePlanetIcons();
     }
 
@@ -220,7 +259,7 @@ public class MinimapController : MonoBehaviour
     {
         if (starSystem == null || _planetsContainer == null)
         {
-            Debug.LogWarning("[MinimapController] Cannot create planet icons - missing references");
+            Debug.LogWarning($"[MinimapController] Cannot create planet icons - starSystem: {starSystem}, planetsContainer: {_planetsContainer}");
             return;
         }
 
@@ -228,6 +267,8 @@ public class MinimapController : MonoBehaviour
         _planetIcons.Clear();
 
         CelestialBodyController[] bodies = starSystem.GetAllBodies();
+        Debug.Log($"[MinimapController] GetAllBodies returned: {bodies?.Length ?? 0} bodies");
+
         if (bodies == null || bodies.Length == 0)
         {
             Debug.LogWarning("[MinimapController] No celestial bodies found in star system");
@@ -284,18 +325,17 @@ public class MinimapController : MonoBehaviour
 
     private void UpdateMinimapPositions()
     {
-        if (_playerIcon != null && playerShip != null)
+        if (playerShip == null) return;
+
+        Vector3 playerPos = playerShip.position;
+        Vector2 centerPos = new Vector2(_minimapSize.x / 2f, _minimapSize.y / 2f);
+
+        if (_playerIcon != null)
         {
-            Vector2 uiPos = CoordinateConverter.WorldToUIPosition(
-                playerShip.position,
-                _worldSizeVector,
-                _minimapSize
-            );
+            _playerIcon.style.left = centerPos.x;
+            _playerIcon.style.top = centerPos.y;
 
-            _playerIcon.style.left = uiPos.x;
-            _playerIcon.style.top = uiPos.y;
-
-            float rotationZ = playerShip.eulerAngles.z;
+            float rotationZ = -playerShip.eulerAngles.z;
             _playerIcon.style.rotate = new Rotate(new Angle(rotationZ, AngleUnit.Degree));
         }
 
@@ -306,8 +346,10 @@ public class MinimapController : MonoBehaviour
 
             if (body != null && icon != null)
             {
+                Vector3 relativePos = body.transform.position - playerPos;
+
                 Vector2 uiPos = CoordinateConverter.WorldToUIPosition(
-                    body.transform.position,
+                    relativePos,
                     _worldSizeVector,
                     _minimapSize
                 );
