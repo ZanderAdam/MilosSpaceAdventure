@@ -40,6 +40,16 @@ public class MobileControls : MonoBehaviour
     /// </summary>
     public bool IsMobileControlsActive => _isMobilePlatform || _forceEnableMobileUI;
 
+    /// <summary>
+    /// Resets all input state flags to false.
+    /// Call before disabling component to prevent stuck inputs.
+    /// </summary>
+    public void ResetInputState()
+    {
+        _isBrakePressed = false;
+        _isScanPressed = false;
+    }
+
     private void Awake()
     {
         DetectPlatform();

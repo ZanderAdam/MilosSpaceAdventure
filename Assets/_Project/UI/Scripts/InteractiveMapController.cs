@@ -47,7 +47,7 @@ public class InteractiveMapController : MonoBehaviour
     private Label _planetType;
     private Label _planetDescription;
 
-    private Dictionary<CelestialBodyController, (VisualElement icon, System.Action<ClickEvent> handler)> _planetIcons = new Dictionary<CelestialBodyController, (VisualElement icon, System.Action<ClickEvent> handler)>();
+    private Dictionary<CelestialBodyController, (VisualElement icon, EventCallback<PointerDownEvent> handler)> _planetIcons = new Dictionary<CelestialBodyController, (VisualElement icon, EventCallback<PointerDownEvent> handler)>();
     private CelestialBodyController _selectedPlanet;
     private float _updateTimer;
     private Vector2 _mapPanelSize;
@@ -236,8 +236,8 @@ public class InteractiveMapController : MonoBehaviour
             Color bodyColor = GetPlanetColor(body);
             icon.style.backgroundColor = bodyColor;
 
-            System.Action<ClickEvent> clickHandler = evt => OnPlanetClicked(body);
-            icon.RegisterCallback(clickHandler);
+            EventCallback<PointerDownEvent> clickHandler = evt => OnPlanetClicked(body);
+            icon.RegisterCallback<PointerDownEvent>(clickHandler);
 
             _planetsContainer.Add(icon);
             _planetIcons[body] = (icon, clickHandler);
@@ -252,7 +252,7 @@ public class InteractiveMapController : MonoBehaviour
         {
             if (kvp.Value.icon != null)
             {
-                kvp.Value.icon.UnregisterCallback(kvp.Value.handler);
+                kvp.Value.icon.UnregisterCallback<PointerDownEvent>(kvp.Value.handler);
                 kvp.Value.icon.RemoveFromHierarchy();
             }
         }

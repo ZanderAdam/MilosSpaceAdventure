@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using MilosAdventure.UI;
 using MilosAdventure.UI.Utils;
 using MilosAdventure.UI.CustomElements;
 using MilosAdventure.Data;
@@ -228,7 +229,14 @@ public class MinimapController : MonoBehaviour
     {
         if (evt.button == 0)
         {
-            Debug.Log("[MinimapController] Minimap tapped! (Interactive map not implemented yet)");
+            if (MapInputManager.Instance != null)
+            {
+                MapInputManager.Instance.ToggleMap();
+            }
+            else
+            {
+                Debug.LogWarning("[MinimapController] MapInputManager.Instance is null - cannot toggle map. Ensure MapInputManager exists in scene.");
+            }
         }
     }
 
