@@ -144,3 +144,9 @@
 .map-planet-icon:active {
     scale: 1.2 1.2;
 }
+
+/* Debug mode - show touch target outlines */
+.debug-outline {
+    border-width: 1px;
+    border-color: rgb(255, 255, 0);
+}

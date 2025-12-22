@@ -31,7 +31,30 @@ public class InteractiveMapController : MonoBehaviour
     [Tooltip("Total world size to display")]
     private float worldSize = 1200f;
 
+    [Header("Animation Settings")]
+    [SerializeField]
+    [Range(0.5f, 3.0f)]
+    [Tooltip("Duration of pulse animation cycle in seconds")]
+    private float pulseDuration = 1.5f;
+
+    [SerializeField]
+    [Range(0.05f, 0.3f)]
+    [Tooltip("Scale amplitude for pulse effect")]
+    private float pulseAmplitude = 0.15f;
+
+    [SerializeField]
+    [Range(0.1f, 2.0f)]
+    [Tooltip("Fade-in transition duration in seconds")]
+    private float fadeInDuration = 0.8f;
+
+    [Header("Debug")]
+    [SerializeField]
+    [Tooltip("Show touch target debug outlines for planet icons")]
+    private bool showDebugOutlines = false;
+
     private const float UPDATE_INTERVAL = 0.1f;
+    private const int ANIMATION_FPS = 60;
+    private const int ANIMATION_UPDATE_MS = 16;
 
     private VisualElement _root;
     private VisualElement _overlay;
@@ -53,6 +76,12 @@ public class InteractiveMapController : MonoBehaviour
     private Vector2 _mapPanelSize;
     private Vector2 _worldSizeVector;
     private bool _isVisible;
+
+    private IVisualElementScheduledItem _playerPulseAnimation;
+    private IVisualElementScheduledItem _selectionPulseAnimation;
+    private IVisualElementScheduledItem _fadeInAnimation;
+    private EventCallback<GeometryChangedEvent> _geometryChangedHandler;
+    private Vector3 _pulseScaleVector = Vector3.one;
 
     private void Awake()
     {
@@ -92,6 +121,12 @@ public class InteractiveMapController : MonoBehaviour
 
         _worldSizeVector = new Vector2(worldSize, worldSize);
 
+        _geometryChangedHandler = OnMapPanelGeometryChanged;
+        if (_mapPanel != null)
+        {
+            _mapPanel.RegisterCallback<GeometryChangedEvent>(_geometryChangedHandler);
+        }
+
         SetupEventHandlers();
     }
 
@@ -110,6 +145,14 @@ public class InteractiveMapController : MonoBehaviour
 
     private void OnDestroy()
     {
+        StopAllAnimations();
+        ClearPlanetIcons();
+
+        if (_mapPanel != null)
+        {
+            _mapPanel.UnregisterCallback<GeometryChangedEvent>(_geometryChangedHandler);
+        }
+
         if (_closeButton != null)
         {
             _closeButton.clicked -= HideMap;
@@ -152,12 +195,11 @@ public class InteractiveMapController : MonoBehaviour
         _overlay.style.display = DisplayStyle.Flex;
 
         ApplySafeAreaPadding();
-        UpdateMapPanelSize();
         CreatePlanetIcons();
         UpdateMapPositions();
 
-        _overlay.AddToClassList("animated-fade-in");
-        _playerIcon?.AddToClassList("animated-pulse");
+        StartFadeInAnimation(_overlay);
+        StartPulseAnimation(_playerIcon, ref _playerPulseAnimation);
     }
 
     public void HideMap()
@@ -165,9 +207,8 @@ public class InteractiveMapController : MonoBehaviour
         if (_overlay == null) return;
 
         _isVisible = false;
+        StopAllAnimations();
         _overlay.style.display = DisplayStyle.None;
-        _overlay.RemoveFromClassList("animated-fade-in");
-        _playerIcon?.RemoveFromClassList("animated-pulse");
 
         ClearSelection();
         ClearPlanetIcons();
@@ -196,14 +237,9 @@ public class InteractiveMapController : MonoBehaviour
 #endif
     }
 
-    private void UpdateMapPanelSize()
+    private void OnMapPanelGeometryChanged(GeometryChangedEvent evt)
     {
-        if (_mapPanel == null) return;
-
-        _mapPanel.RegisterCallback<GeometryChangedEvent>(evt =>
-        {
-            _mapPanelSize = new Vector2(evt.newRect.width, evt.newRect.height);
-        });
+        _mapPanelSize = new Vector2(evt.newRect.width, evt.newRect.height);
     }
 
     private void CreatePlanetIcons()
@@ -235,6 +271,11 @@ public class InteractiveMapController : MonoBehaviour
 
             Color bodyColor = GetPlanetColor(body);
             icon.style.backgroundColor = bodyColor;
+
+            if (showDebugOutlines)
+            {
+                icon.AddToClassList("debug-outline");
+            }
 
             EventCallback<PointerDownEvent> clickHandler = evt => OnPlanetClicked(body);
             icon.RegisterCallback<PointerDownEvent>(clickHandler);
@@ -327,7 +368,7 @@ public class InteractiveMapController : MonoBehaviour
         if (_selectionHighlight != null)
         {
             _selectionHighlight.style.display = DisplayStyle.Flex;
-            _selectionHighlight.AddToClassList("animated-pulse");
+            StartPulseAnimation(_selectionHighlight, ref _selectionPulseAnimation);
         }
 
         if (_infoPanel != null)
@@ -363,12 +404,87 @@ public class InteractiveMapController : MonoBehaviour
         if (_selectionHighlight != null)
         {
             _selectionHighlight.style.display = DisplayStyle.None;
-            _selectionHighlight.RemoveFromClassList("animated-pulse");
+            StopPulseAnimation(ref _selectionPulseAnimation, _selectionHighlight);
         }
 
         if (_infoPanel != null)
         {
             _infoPanel.style.display = DisplayStyle.None;
+        }
+    }
+
+    private void StartPulseAnimation(VisualElement element, ref IVisualElementScheduledItem animation)
+    {
+        if (element == null) return;
+
+        StopPulseAnimation(ref animation, element);
+
+        float startTime = Time.time;
+
+        animation = element.schedule.Execute(() =>
+        {
+            float elapsed = Time.time - startTime;
+            float progress = (elapsed % pulseDuration) / pulseDuration;
+
+            float scale = 1f + Mathf.Sin(progress * Mathf.PI * 2f) * pulseAmplitude;
+            _pulseScaleVector.x = scale;
+            _pulseScaleVector.y = scale;
+            element.style.scale = new Scale(_pulseScaleVector);
+        }).Every(ANIMATION_UPDATE_MS);
+    }
+
+    private void StopPulseAnimation(ref IVisualElementScheduledItem animation, VisualElement element)
+    {
+        if (animation != null)
+        {
+            animation.Pause();
+            animation = null;
+        }
+
+        if (element != null)
+        {
+            element.style.scale = new Scale(Vector3.one);
+        }
+    }
+
+    private void StartFadeInAnimation(VisualElement element)
+    {
+        if (element == null) return;
+
+        element.style.opacity = 0f;
+        float startTime = Time.time;
+
+        _fadeInAnimation = element.schedule.Execute(() =>
+        {
+            float elapsed = Time.time - startTime;
+            float progress = Mathf.Clamp01(elapsed / fadeInDuration);
+
+            float eased = 1f - Mathf.Pow(1f - progress, 3f);
+            element.style.opacity = eased;
+
+            if (progress >= 1f)
+            {
+                element.style.opacity = 1f;
+                _fadeInAnimation?.Pause();
+                _fadeInAnimation = null;
+            }
+        }).Every(ANIMATION_UPDATE_MS);
+    }
+
+    private void StopAllAnimations()
+    {
+        StopPulseAnimation(ref _playerPulseAnimation, _playerIcon);
+        StopPulseAnimation(ref _selectionPulseAnimation, _selectionHighlight);
+
+        if (_fadeInAnimation != null)
+        {
+            _fadeInAnimation.Pause();
+            _fadeInAnimation = null;
+        }
+
+        if (_overlay != null)
+        {
+            _overlay.style.opacity = 1f;
         }
     }
 }
