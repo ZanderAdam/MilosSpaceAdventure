@@ -17,6 +17,7 @@ public class CelestialBodyController : MonoBehaviour
 
     public string Id => _data?.id;
     public string BodyName => _data?.name;
+    public string Description => _data?.description ?? "";
     public bool IsStar => _data?.IsStar ?? false;
 
     public float VisualRadius

@@ -1,0 +1,20 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_Project/UI/USS/Theme.uss?fileID=7433441132597879392&amp;guid=fc99a7544743b4c83ad2a3362cf5bdc2&amp;type=3#Theme" />
+    <Style src="project://database/Assets/_Project/UI/USS/Animations.uss?fileID=7433441132597879392&amp;guid=e0e5b583b21444a2c965f34ef974a054&amp;type=3#Animations" />
+    <Style src="project://database/Assets/_Project/UI/USS/InteractiveMap.uss?fileID=7433441132597879392&amp;guid=72b1b76af3dab40148e42b825daee38f&amp;type=3#InteractiveMap" />
+    <ui:VisualElement name="fullscreen-overlay" class="map-overlay" style="display: none;">
+        <ui:Button name="dimmed-background" class="dimmed-background" />
+        <ui:VisualElement name="map-panel" class="map-panel">
+            <ui:VisualElement name="planets-container" class="planets-container" />
+            <ui:VisualElement name="player-icon" class="player-icon" />
+            <ui:VisualElement name="selection-highlight" class="selection-highlight" style="display: none;" />
+            <ui:VisualElement name="info-panel" class="info-panel" style="display: none; font-size: 2%;">
+                <ui:Label name="planet-name" text="Planet Name" class="info-panel__name" />
+                <ui:Label name="planet-type" text="Type: Planet" class="info-panel__type" />
+                <ui:Label name="planet-description" text="Description goes here" class="info-panel__description" />
+            </ui:VisualElement>
+            <ui:Button name="close-button" text="✕" class="close-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <MilosAdventure.UI.CustomElements.PlanetIconElement name="planet-icon-" />
+</ui:UXML>

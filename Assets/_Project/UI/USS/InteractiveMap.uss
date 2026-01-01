@@ -1,0 +1,152 @@
+/* Interactive Map Styles - UI Toolkit */
+
+.map-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.dimmed-background {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    border-width: 0;
+    cursor: default;
+}
+
+.map-panel {
+    position: relative;
+    width: 95%;
+    height: 95%;
+    background-color: rgba(10, 10, 20, 1);
+    border-radius: var(--border-radius-sm);
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.3);
+    overflow: hidden;
+}
+
+.planets-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.player-icon {
+    position: absolute;
+    translate: -50% -50%;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.selection-highlight {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+    border-color: var(--color-selection);
+    border-radius: 50%;
+    translate: -50% -50%;
+}
+
+.close-button {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 15px;
+    height: 15px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.3);
+    color: rgb(255, 255, 255);
+    font-size: 10px;
+    -unity-text-align: middle-center;
+    cursor: link;
+}
+
+.close-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.close-button:active {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.info-panel {
+    position: absolute;
+    right: 0px;
+    width: 25%;
+    height: 100%;
+    padding: 10px;
+    font-size: 10px;
+    background-color: rgba(0, 0, 0, 0.9);
+    border-radius: var(--border-radius-sm);
+    border-width-left: 1px;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.info-panel__name {
+    font-size: 7px;
+    color: rgb(255, 255, 255);
+    margin-bottom: 3px;
+    -unity-font-style: bold;
+    white-space: normal;
+}
+
+.info-panel__type {
+    font-size: 7px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 4px;
+}
+
+.info-panel__description {
+    font-size: 5px;
+    color: rgba(255, 255, 255, 0.8);
+    white-space: normal;
+    overflow: hidden;
+    max-height: 55px;
+}
+
+/* Planet icon for interactive map */
+.map-planet-icon {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    translate: -50% -50%;
+    cursor: link;
+}
+
+.map-planet-icon--star {
+    width: 10px;
+    height: 10px;
+    background-color: var(--color-star);
+}
+
+.map-planet-icon--planet {
+    background-color: var(--color-planet);
+}
+
+.map-planet-icon:hover {
+    scale: 1.5 1.5;
+}
+
+.map-planet-icon:active {
+    scale: 1.2 1.2;
+}
+
+/* Debug mode - show touch target outlines */
+.debug-outline {
+    border-width: 1px;
+    border-color: rgb(255, 255, 0);
+}
